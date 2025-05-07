@@ -1,0 +1,3 @@
+# .gitignore
+node_modules/
+matiks_logs.json

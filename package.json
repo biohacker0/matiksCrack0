@@ -1,0 +1,16 @@
+{
+  "name": "matiks-automation",
+  "version": "1.0.0",
+  "description": "A Node.js script to automate Matiks game gameplay",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "ws": "^8.18.0"
+  },
+  "author": "",
+  "license": "MIT"
+}
