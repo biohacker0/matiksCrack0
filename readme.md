@@ -14,7 +14,7 @@ _____________________________________________________________________________
 
 
 >> what dis
-Tool that auto finds a Matiks game, joins it, auto decrypts the questions, and burst solves them.
+Tool that auto finds a matiks.in game, joins it, auto decrypts the questions, and burst solves them.
 
 > Why? Ehh, I was bored, script kiddie be script kidding something something.
 > Enjoy before it gets fixed.
