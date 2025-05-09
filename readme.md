@@ -127,3 +127,9 @@ npm start -- --game https://www.matiks.com/game/<gameId>/play
 - To get game id, start any due game, and in the URL like:
   https://www.matiks.com/game/681dca234ea66a4648a40657/play
   that 681qba111ac54a4648a30616 is the game id
+
+## Disclaimer
+
+- for educational and security testing purposes only. use responsibly in compliance with matiks’ terms of service to learn about api interactions and promote secure system design.
+
+- The author(s) assume no liability and are not responsible for any misuse or damage caused by this program. Users are solely responsible for ensuring their use complies with all applicable laws and regulations.
