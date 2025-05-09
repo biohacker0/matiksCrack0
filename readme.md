@@ -78,16 +78,10 @@ To run the script, you need two pieces of information: the WebSocket URI (includ
 
 #### Step 2: Get Your USER_ID
 
-**Option 1**: From Game URL
-
-- Play any game on Matiks
-- The URL will look like: `https://www.matiks.com/game/681ab0453cdv909fb054d570/play`
-- The part `681ab0453cdv909fb054d570` is your user ID - copy it
-
-**Option 2**: Decode JWT Token
+**Option 1**: Decode JWT Token
 
 1. Copy the JWT token (the part after `token=` in the URI)
-2. Visit [jwt.io](https://jwt.io)
+2. Visit [jwt.io](https://jwt.io) or [FusionAuth JWT Decoder](https://fusionauth.io/dev-tools/jwt-decoder)
 3. Paste the token into the "Encoded" section
 4. In the "Decoded" payload, look for an `id` field (e.g., `"id": "6816deda11e2a69441abc5d4"`)
 
@@ -109,7 +103,27 @@ USER_ID=6817dfdn13a2a42441abc0e1
 1. **Ensure the .env File is Configured**:
    Verify that `URI` and `USER_ID` are correctly set in the .env file.
 
-2. **Start the Script**:
-   ```bash
-   npm start
-   ```
+### Mode 1: Autoplay (Find and Play a Game)
+
+Automatically searches for a game, joins it, and plays it.
+
+```bash
+npm start -- --autoplay
+```
+
+- This mode runs the full automation: finds a game, retrieves questions, submits answers, and outputs the result URL.
+- Use this when you want the script to handle everything from start to finish.
+
+### Mode 2: Play a Specific Game
+
+Plays a specific game using a provided game URL (e.g., obtained from the Matiks GUI or a previous --autoplay run).
+
+```bash
+npm start -- --game https://www.matiks.com/game/<gameId>/play
+```
+
+- Replace <gameId> with the actual game ID (a 24-character hexadecimal string).
+- Use this when you've started a game via the Matiks website and want to automate answering questions for that game.
+- To get game id, start any due game, and in the URL like:
+  https://www.matiks.com/game/681dca234ea66a4648a40657/play
+  that 681qba111ac54a4648a30616 is the game id

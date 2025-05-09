@@ -1,22 +1,31 @@
-// index.js
+/*
+ * Matiks Automation Script
+ * For educational and security testing purposes only.
+ * Demonstrates WebSocket/GraphQL API interactions and highlights a hardcoded encryption key issue.
+ * Use responsibly and in compliance with Matiks' Terms of Service.
+ * Unauthorized use may violate platform policies.
+ */
+
 require("dotenv").config();
+const { program } = require("commander");
 const { addLog, saveLogs, extractTokenFromUri, extractGameId } = require("./utils");
 const { fetchGameId, fetchEncryptedQuestions, parseAndSolveQuestions, listener, sender } = require("./gameLogic");
 
-async function main(uri, userId) {
+// Main automation function
+async function main(uri, userId, gameUrl = null) {
   // Validate environment variables
   if (!uri || !userId) {
     await addLog("ERROR", "URI or USER_ID not provided in .env file");
-    return;
+    throw new Error("Missing URI or USER_ID");
   }
 
-  // Extracting JWT token from URI
+  // Extract JWT token from URI
   let token;
   try {
     token = extractTokenFromUri(uri);
   } catch (e) {
     await addLog("ERROR", "Invalid URI or token", { error: e.message });
-    return;
+    throw e;
   }
 
   // HTTP headers with dynamic token
@@ -43,22 +52,33 @@ async function main(uri, userId) {
   // AES key for decrypting questions
   const aesKey = "S1E9C5R@E@T*K)E(YS1E9C5R^E@T*K)E";
 
-  const userChannel = `USER_EVENT_${userId}`;
+  let gameId;
+  let extractedGameId;
   try {
-    // Find game and get URL
-    await addLog("INFO", "Starting game search");
-    const gameId = await fetchGameId(userChannel, uri, headers);
-    if (!gameId) {
-      await addLog("ERROR", "Failed to retrieve gameId");
-      return;
+    // Step 1: Find game or use provided game URL
+    if (gameUrl) {
+      // Use provided game URL
+      await addLog("INFO", `Using provided game URL: ${gameUrl}`);
+      extractedGameId = extractGameId(gameUrl);
+      gameId = extractedGameId;
+      await addLog("INFO", `Extracted gameId: ${extractedGameId}`, { game_id: extractedGameId });
+    } else {
+      // Search for a new game
+      await addLog("INFO", "Starting game search");
+      const userChannel = `USER_EVENT_${userId}`;
+      gameId = await fetchGameId(userChannel, uri, headers);
+      if (!gameId) {
+        await addLog("ERROR", "Failed to retrieve gameId");
+        throw new Error("Failed to retrieve gameId");
+      }
+      const formedGameUrl = `https://www.matiks.com/game/${gameId}/play`;
+      await addLog("INFO", `Game URL formed: ${formedGameUrl}`, { game_url: formedGameUrl });
+      extractedGameId = extractGameId(formedGameUrl);
+      await addLog("INFO", `Extracted gameId: ${extractedGameId}`, { game_id: extractedGameId });
     }
-    const gameUrl = `https://www.matiks.com/game/${gameId}/play`;
-    await addLog("INFO", `Game URL formed: ${gameUrl}`, { game_url: gameUrl });
 
-    //  Play the game
+    // Step 2: Play the game
     await addLog("INFO", "Starting gameplay");
-    const extractedGameId = extractGameId(gameUrl);
-    await addLog("INFO", `Extracted gameId: ${extractedGameId}`, { game_id: extractedGameId });
     const channel = `GAME_EVENT_${extractedGameId}_V2`;
     const encryptedQuestions = await fetchEncryptedQuestions(extractedGameId, headers);
     const answers = parseAndSolveQuestions(encryptedQuestions, aesKey, userId);
@@ -75,27 +95,53 @@ async function main(uri, userId) {
     await Promise.all([listener(uri, channel, userId, headers, sharedState), sender(uri, channel, extractedGameId, userId, headers, answers, sharedState)]);
 
     const endTime = Date.now();
-    await addLog("INFO", `Game ended in ${(endTime - startTime) / 1000} seconds`, { duration: (endTime - startTime) / 1000 });
+    await addLog("INFO", `"Game ended in ${(endTime - startTime) / 1000} seconds`, {
+      duration: (endTime - startTime) / 1000,
+    });
 
-    //Output result URL
+    // Step 3: Output result URL
     const resultUrl = `https://www.matiks.com/game/${extractedGameId}/result`;
     await addLog("INFO", `Game Result URL: ${resultUrl}`, { result_url: resultUrl });
-    await addLog(
-      "INFO",
-      `Open ${resultUrl} in a browser to view the final
-
- score`
-    );
+    await addLog("INFO", `Open ${resultUrl} in a browser to view the final score`);
   } catch (e) {
     await addLog("ERROR", "Error during automation", { error: e.message });
     await addLog("ERROR", "Check token validity in browser's Network tab or try during peak hours");
+    throw e;
   } finally {
     await saveLogs();
   }
 }
 
-// Run the script
-main(process.env.URI, process.env.USER_ID).catch(async (e) => {
-  await addLog("ERROR", "Main execution failed", { error: e.message });
-  await saveLogs();
-});
+// CLI setup with commander
+program
+  .version("1.0.0")
+  .description("Matiks Automation CLI")
+  .option("--autoplay", "Automatically find, join, and play a Matiks game")
+  .option("--game <url>", "Play a specific Matiks game using the provided game URL")
+  .action(async (options) => {
+    if (!options.autoplay && !options.game) {
+      console.error("Error: You must specify either --autoplay or --game <url>");
+      program.help();
+      process.exit(1);
+    }
+    if (options.autoplay && options.game) {
+      console.error("Error: Cannot use both --autoplay and --game together");
+      program.help();
+      process.exit(1);
+    }
+
+    try {
+      if (options.autoplay) {
+        await main(process.env.URI, process.env.USER_ID);
+      } else if (options.game) {
+        await main(process.env.URI, process.env.USER_ID, options.game);
+      }
+    } catch (e) {
+      await addLog("ERROR", "CLI execution failed", { error: e.message });
+      await saveLogs();
+      process.exit(1);
+    }
+  });
+
+// Parse CLI arguments
+program.parse(process.argv);
