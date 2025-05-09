@@ -20,7 +20,7 @@ Tool that auto finds a matiks.in game, joins it, auto decrypts the questions, an
 > Enjoy before it gets fixed.
 
 - Connects to Matiks server via WebSocket
-- Automatically finds and joins available games
+- Automatically finds and joins available games or join particular game
 - Decrypts questions in real-time
 - Solves problems before others can
 
@@ -85,7 +85,7 @@ To run the script, you need two pieces of information: the WebSocket URI (includ
 3. Paste the token into the "Encoded" section
 4. In the "Decoded" payload, look for an `id` field (e.g., `"id": "6816deda11e2a69441abc5d4"`)
 
-**Option 3**: Network Requests
+**Option 2**: Network Requests
 
 1. Check the browser's Network tab
 2. Look for HTTP requests (e.g., to `https://server.matiks.com/api`) after logging in
@@ -103,30 +103,32 @@ USER_ID=6817dfdn13a2a42441abc0e1
 1. **Ensure the .env File is Configured**:
    Verify that `URI` and `USER_ID` are correctly set in the .env file.
 
-### Mode 1: Autoplay (Find and Play a Game)
+The script supports two modes via CLI flags:
 
-Automatically searches for a game, joins it, and plays it.
+### Mode 1: Autoplay (Discover and Analyze a Game)
+
+Explores game mechanics by automatically discovering a game.
 
 ```bash
 npm start -- --autoplay
 ```
 
-- This mode runs the full automation: finds a game, retrieves questions, submits answers, and outputs the result URL.
-- Use this when you want the script to handle everything from start to finish.
+- This mode runs the full exploration: finds a game, processes data, and outputs a result URL.
+- Use this to study Matiks' API interactions from start to finish.
 
-### Mode 2: Play a Specific Game
+### Mode 2: Analyze a Specific Game
 
-Plays a specific game using a provided game URL (e.g., obtained from the Matiks GUI or a previous --autoplay run).
+Explores a specific game using the full game URL (e.g., from the Matiks GUI or a previous --autoplay run).
 
 ```bash
-npm start -- --game https://www.matiks.com/game/<gameId>/play
+npm start -- --game https://www.matiks.com/game/6848danc01q2a69543abq5d4/play
 ```
 
-- Replace <gameId> with the actual game ID (a 24-character hexadecimal string).
-- Use this when you've started a game via the Matiks website and want to automate answering questions for that game.
-- To get game id, start any due game, and in the URL like:
-  https://www.matiks.com/game/681dca234ea66a4648a40657/play
-  that 681qba111ac54a4648a30616 is the game id
+- Provide the full URL as shown, including https://www.matiks.com/game/<gameId>/play.
+- The <gameId> must be a 24-character hexadecimal string.
+- Use this to analyze a game you've started via the Matiks website or from an --autoplay output.
+
+Note: The -- after npm start ensures CLI flags are passed to the script, not npm.
 
 ## Disclaimer
 

@@ -1,15 +1,25 @@
+// index.js
 /*
  * Matiks Automation Script
- * For educational and security testing purposes only.
- * Demonstrates WebSocket/GraphQL API interactions and highlights a hardcoded encryption key issue.
- * Use responsibly and in compliance with Matiks' Terms of Service.
- * Unauthorized use may violate platform policies.
+ * For educational and security testing purposes only, demonstrating advanced interactions
+ * with WebSocket and GraphQL APIs. Explores client-side encryption practices to promote
+ * better security design. Use solely in compliance with Matiks' Terms of Service and
+ * applicable laws. The author has adhered to responsible disclosure principles and is
+ * not liable for any misuse or unauthorized actions.
  */
-
 require("dotenv").config();
 const { program } = require("commander");
 const { addLog, saveLogs, extractTokenFromUri, extractGameId } = require("./utils");
 const { fetchGameId, fetchEncryptedQuestions, parseAndSolveQuestions, listener, sender } = require("./gameLogic");
+
+// Validate URL format
+function validateGameUrl(url) {
+  const pattern = /^https:\/\/www\.matiks\.com\/game\/[0-9a-f]{24}\/play$/;
+  if (!pattern.test(url)) {
+    throw new Error("Invalid game URL. Must be in the format: https://www.matiks.com/game/<24-character-id>/play");
+  }
+  return url;
+}
 
 // Main automation function
 async function main(uri, userId, gameUrl = null) {
@@ -57,8 +67,9 @@ async function main(uri, userId, gameUrl = null) {
   try {
     // Step 1: Find game or use provided game URL
     if (gameUrl) {
-      // Use provided game URL
+      // Validate and use provided game URL
       await addLog("INFO", `Using provided game URL: ${gameUrl}`);
+      validateGameUrl(gameUrl); // Ensure URL is valid
       extractedGameId = extractGameId(gameUrl);
       gameId = extractedGameId;
       await addLog("INFO", `Extracted gameId: ${extractedGameId}`, { game_id: extractedGameId });
@@ -95,7 +106,7 @@ async function main(uri, userId, gameUrl = null) {
     await Promise.all([listener(uri, channel, userId, headers, sharedState), sender(uri, channel, extractedGameId, userId, headers, answers, sharedState)]);
 
     const endTime = Date.now();
-    await addLog("INFO", `"Game ended in ${(endTime - startTime) / 1000} seconds`, {
+    await addLog("INFO", `Game ended in ${(endTime - startTime) / 1000} seconds`, {
       duration: (endTime - startTime) / 1000,
     });
 
@@ -115,9 +126,9 @@ async function main(uri, userId, gameUrl = null) {
 // CLI setup with commander
 program
   .version("1.0.0")
-  .description("Matiks Automation CLI")
-  .option("--autoplay", "Automatically find, join, and play a Matiks game")
-  .option("--game <url>", "Play a specific Matiks game using the provided game URL")
+  .description("Matiks Automation CLI for educational and security testing")
+  .option("--autoplay", "Automatically discover and analyze a Matiks game")
+  .option("--game <url>", "Analyze a specific Matiks game using the full game URL (e.g., https://www.matiks.com/game/<gameId>/play)")
   .action(async (options) => {
     if (!options.autoplay && !options.game) {
       console.error("Error: You must specify either --autoplay or --game <url>");
